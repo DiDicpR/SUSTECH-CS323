@@ -8,9 +8,6 @@ public class CreateTAC extends splBaseVisitor<Void> {
     // 符号表，用hashmap实现
     private Map<String, Integer> symbolTable = new HashMap<>();
 
-
-
-
     /**
      * Program: ExtDefList
      */
@@ -285,7 +282,7 @@ public class CreateTAC extends splBaseVisitor<Void> {
 
             // 创建循环的回跳分支
             //改了个genList(loopStart)-> genList(loopStart)[0]
-            genId(new GOTOTAC(TAC.tacVector.size(), genList(loopStart)[0]));
+            genId(new GOTOTAC(TAC.tacVector.size(), genList(loopStart)));
 
             // 创建条件为 false 的分支
             int falseBranch = genId(new LabelTAC(TAC.tacVector.size()));
@@ -357,6 +354,9 @@ public class CreateTAC extends splBaseVisitor<Void> {
      */
     private int interExp(splParser.ExpContext ctx, boolean single) {
         // READ LP RP
+        if (ctx == null) {
+            return 0;
+        }
         if (ctx.ID() != null && "READ".equals(ctx.ID().getText()) && ctx.LP() != null && ctx.RP() != null) {
             // 生成 READ TAC
             ReadTAC tac = new ReadTAC(TAC.tacVector.size());
@@ -524,54 +524,66 @@ public class CreateTAC extends splBaseVisitor<Void> {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LT_OPERATOR, lexpid, rexpid, 0));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LT_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), 0));
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             return ifid;
         }
         if (ctx.LE() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LE_OPERATOR, lexpid, rexpid, 0));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LE_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), 0));
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             return ifid;
         }
         if (ctx.GT() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GT_OPERATOR, lexpid, rexpid, 0));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GT_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), 0));
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             return ifid;
         }
         if (ctx.GE() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GE_OPERATOR, lexpid, rexpid, 0));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GE_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), 0));
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             return ifid;
         }
         if (ctx.NE() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.NE_OPERATOR, lexpid, rexpid, 0));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.NE_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), 0));
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             return ifid;
         }
         if (ctx.EQ() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.EQ_OPERATOR, lexpid, rexpid, 0));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.EQ_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), 0));
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
+            genId(new LabelTAC(TAC.tacVector.size()));
             return ifid;
         }
 
@@ -1005,7 +1017,7 @@ public class CreateTAC extends splBaseVisitor<Void> {
         br.clear();
 
         // 输出日志信息（可选）
-        System.out.println("TAC generation environment initialized.");
+//        System.out.println("TAC generation environment initialized.");
     }
 
 
@@ -1018,7 +1030,7 @@ public class CreateTAC extends splBaseVisitor<Void> {
         symbolTable.put(name, id);
 
         // 输出调试信息
-        System.out.printf("putIR: %s -> %d\n", name, id);
+//        System.out.printf("putIR: %s -> %d\n", name, id);
     }
 
     /**
@@ -1052,8 +1064,8 @@ public class CreateTAC extends splBaseVisitor<Void> {
      * @param id 标签 ID
      * @return 包含该标签 ID 的数组
      */
-    private int[] genList(int id) {
-        return new int[]{id}; // 返回一个包含单个整数的数组
+    private int genList(int id) {
+        return id+1; // 返回一个包含单个整数的数组
     }
 
 

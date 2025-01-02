@@ -1,0 +1,34 @@
+FUNCTION mod :
+PARAM t2
+PARAM t3
+t4 := #0
+t5 := t4 - #0
+FUNCTION isPalindrome :
+PARAM t7
+t8 := #0
+t9 := t8
+t10 := #0
+t11 := t10
+t12 := #0
+t13 := t12
+t14 := #0
+IF t14 != t0 GOTO label16
+LABEL label16 :
+GOTO label18
+LABEL label18 :
+t19 := #0
+IF t19 == t0 GOTO label21
+LABEL label21 :
+GOTO label23
+LABEL label23 :
+FUNCTION main :
+t25 := #0
+t26 := #0
+t27 := #0
+ARG t27
+t29 := CALL isPalindrome
+IF t29 == t0 GOTO label31
+LABEL label31 :
+GOTO label33
+LABEL label33 :
+t34 := #0

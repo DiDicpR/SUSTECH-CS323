@@ -11,7 +11,7 @@ import java.io.InputStream;
 
 public class main {
     public static void main(String[] args) throws IOException {
-        InputStream is = new FileInputStream("D:\\sf\\team-project-24spring-29\\antrlee\\src\\main\\java\\gen\\1.txt"); // or System.in;
+        InputStream is = new FileInputStream("D:\\SUSTech\\Fall 2024\\Compilers\\SUSTECH-CS323\\antrlee\\gen\\phase3\\test_3_r01.spl"); // or System.in;
         ANTLRInputStream input = new ANTLRInputStream(is);
         splLexer lexer = new splLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);

@@ -255,7 +255,8 @@ public class CreateTAC extends splBaseVisitor<Void> {
             interStmt(ctx.stmt(0)); // 处理 if 分支
             int falseBranch;
             if (ctx.ELSE() != null) {
-                int jumpBranch = genId(new GOTOTAC(TAC.tacVector.size(), genList()));
+                //genlist改0
+                int jumpBranch = genId(new GOTOTAC(TAC.tacVector.size(), 0));
                 falseBranch = genId(new LabelTAC(TAC.tacVector.size()));
                 interIf(expId, trueBranch, falseBranch); // 生成 IF 条件判断
                 interStmt(ctx.stmt(1)); // 处理 else 分支
@@ -522,43 +523,55 @@ public class CreateTAC extends splBaseVisitor<Void> {
         if (ctx.LT() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LT_OPERATOR, lexpid, rexpid, genList()));
-            genId(new GOTOTAC(TAC.tacVector.size(), genList()));
+            //genlist改0
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LT_OPERATOR, lexpid, rexpid, 0));
+            //genlist改0
+            genId(new GOTOTAC(TAC.tacVector.size(), 0));
             return ifid;
         }
         if (ctx.LE() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LE_OPERATOR, lexpid, rexpid, genList()));
-            genId(new GOTOTAC(TAC.tacVector.size(), genList()));
+            //genlist改0
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LE_OPERATOR, lexpid, rexpid, 0));
+            //genlist改0
+            genId(new GOTOTAC(TAC.tacVector.size(), 0));
             return ifid;
         }
         if (ctx.GT() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GT_OPERATOR, lexpid, rexpid, genList()));
-            genId(new GOTOTAC(TAC.tacVector.size(), genList()));
+            //genlist改0
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GT_OPERATOR, lexpid, rexpid, 0));
+            //genlist改0
+            genId(new GOTOTAC(TAC.tacVector.size(), 0));
             return ifid;
         }
         if (ctx.GE() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GE_OPERATOR, lexpid, rexpid, genList()));
-            genId(new GOTOTAC(TAC.tacVector.size(), genList()));
+            //genlist改0
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GE_OPERATOR, lexpid, rexpid, 0));
+            //genlist改0
+            genId(new GOTOTAC(TAC.tacVector.size(), 0));
             return ifid;
         }
         if (ctx.NE() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.NE_OPERATOR, lexpid, rexpid, genList()));
-            genId(new GOTOTAC(TAC.tacVector.size(), genList()));
+            //genlist改0
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.NE_OPERATOR, lexpid, rexpid, 0));
+            //genlist改0
+            genId(new GOTOTAC(TAC.tacVector.size(), 0));
             return ifid;
         }
         if (ctx.EQ() != null) {
             int lexpid = interExp(ctx.exp(0), false);
             int rexpid = interExp(ctx.exp(2), false);
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.EQ_OPERATOR, lexpid, rexpid, genList()));
-            genId(new GOTOTAC(TAC.tacVector.size(), genList()));
+            //genlist改0
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.EQ_OPERATOR, lexpid, rexpid, 0));
+            //genlist改0
+            genId(new GOTOTAC(TAC.tacVector.size(), 0));
             return ifid;
         }
 

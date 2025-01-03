@@ -12,7 +12,7 @@ import java.io.PrintStream;
 
 public class main {
     public static void main(String[] args) throws IOException {
-        InputStream is = new FileInputStream("C:\\Users\\aoxiangxueyuan\\PycharmProjects\\git\\SUSTECH-CS323\\antrlee\\gen\\phase3\\test_3_r05.spl"); // or System.in;
+        InputStream is = new FileInputStream("/Users/Leslie/Desktop/SUSTECH-CS323/antrlee/gen/phase3/test_3_r02_formal.spl"); // or System.in;
         ANTLRInputStream input = new ANTLRInputStream(is);
         splLexer lexer = new splLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);

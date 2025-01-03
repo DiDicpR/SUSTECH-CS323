@@ -147,12 +147,10 @@ dec         : varDec ASSIGN exp
 
 // Expression
 exp         :
-             exp MUL exp
-            | exp DIV exp
+            exp ( MUL | DIV)  exp
             | exp MUL {System.err.println("Error type B at Line " + $MUL.line + ": Missing Exp after *");}
             | exp DIV {System.err.println("Error type B at Line " + $DIV.line + ": Missing Exp after /");}
-            | exp PLUS exp
-            | exp MINUS exp
+            | exp ( PLUS | MINUS) exp
             | exp PLUS {System.err.println("Error type B at Line " + $PLUS.line + ": Missing Exp after +");}
             | exp MINUS {System.err.println("Error type B at Line " + $MINUS.line + ": Missing Exp after -");}
             | exp NE exp

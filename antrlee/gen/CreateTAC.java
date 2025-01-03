@@ -26,7 +26,27 @@ public class CreateTAC extends splBaseVisitor<Void> {
 
         return null;
     }
-
+//    @Override
+//    public Void visitProgram(splParser.ProgramContext ctx) {
+//        try {
+//            // 初始化全局状态
+//            interInit();
+//
+//            // 遍历语法树，生成 TAC
+//            visit(ctx.extDefList());
+//        } catch (Exception e) {
+//            // 捕获中途可能出现的异常并打印错误信息
+//            System.err.println("An error occurred while generating TAC: " + e.getMessage());
+//        } finally {
+//            // 无论是否出错，都会输出当前生成的 TAC 指令
+//            System.out.println("Generated TAC instructions:");
+//            for (int i = 0; i < TAC.tacVector.size(); i++) {
+//                System.out.println(TAC.tacVector.get(i).toString());
+//            }
+//        }
+//
+//        return null;
+//    }
 
     /**
      * ExtDefList: ExtDef ExtDefList | %empty
@@ -221,7 +241,7 @@ public class CreateTAC extends splBaseVisitor<Void> {
      * Stmt: IF LP Exp RP Stmt
      * Stmt: IF LP Exp RP Stmt ELSE Stmt
      * Stmt: WHILE LP Exp RP Stmt
-     * Stmt: WRITE LP Exp RP SEMI
+
      */
     /**
      * Stmt: Exp SEMI
@@ -232,28 +252,20 @@ public class CreateTAC extends splBaseVisitor<Void> {
      * Stmt: WHILE LP Exp RP Stmt
      */
     private void interStmt(splParser.StmtContext ctx) {
-        // Exp SEMI
-        if (ctx.exp() != null) {
+        if (ctx.getChild(0) instanceof splParser.ExpContext) {
             interExp(ctx.exp(),false);
-        }
-        // CompSt
-        else if (ctx.compSt() != null) {
+        }else if (ctx.getChild(0) instanceof splParser.CompStContext){
             interCompSt(ctx.compSt());
-        }
-        // RETURN Exp SEMI
-        else if (ctx.RETURN() != null) {
+        }else if (ctx.RETURN() != null) {
             int expId = interExp(ctx.exp(),false);
             genId(new ReturnTAC(TAC.tacVector.size(), expId));
-        }
-        // IF LP Exp RP Stmt
-        else if (ctx.IF() != null) {
+        }else if (ctx.IF() != null){
             int expId = interExp(ctx.exp(),false); // 处理条件表达式
             int trueBranch = genId(new LabelTAC(TAC.tacVector.size()));
             interStmt(ctx.stmt(0)); // 处理 if 分支
             int falseBranch;
             if (ctx.ELSE() != null) {
-                //genlist改0
-                int jumpBranch = genId(new GOTOTAC(TAC.tacVector.size(), 0));
+                int jumpBranch = genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()));
                 falseBranch = genId(new LabelTAC(TAC.tacVector.size()));
                 interIf(expId, trueBranch, falseBranch); // 生成 IF 条件判断
                 interStmt(ctx.stmt(1)); // 处理 else 分支
@@ -263,42 +275,30 @@ public class CreateTAC extends splBaseVisitor<Void> {
                 falseBranch = genId(new LabelTAC(TAC.tacVector.size()));
                 interIf(expId, trueBranch, falseBranch);
             }
-        }
-        // WHILE LP Exp RP Stmt
-        //修改后的WHILE，可能有问题
+        }// WHILE LP Exp RP Stmt
         else if (ctx.WHILE() != null) {
             int contSize = cont.size();
             int brSize = br.size();
-            int loopStart = genId(new LabelTAC(TAC.tacVector.size())); // 循环开始的标签
-
-            // 处理条件表达式
+            int loopStart = genId(new LabelTAC(TAC.tacVector.size()));
             int expId = interExp(ctx.exp(),false);
-
-            // 创建条件为 true 的分支
             int trueBranch = genId(new LabelTAC(TAC.tacVector.size()));
-
-            // 处理循环体
-            interStmt(ctx.stmt(0)); // 注意这里需要使用索引 0，确保处理第一个 stmt
-
-            // 创建循环的回跳分支
-            //改了个genList(loopStart)-> genList(loopStart)[0]
-            genId(new GOTOTAC(TAC.tacVector.size(), genList(loopStart)));
-
-            // 创建条件为 false 的分支
+            interStmt(ctx.stmt(0)); // 处理循环体
+            genId(new GOTOTAC(TAC.tacVector.size(), loopStart)); // 回到循环开始
             int falseBranch = genId(new LabelTAC(TAC.tacVector.size()));
-
-            // 生成 WHILE 的条件判断
-            interIf(expId, trueBranch, falseBranch);
-
-            // 处理 continue 和 break 的栈
+            interIf(expId, trueBranch, falseBranch); // 生成 WHILE 条件判断
             interWhile(cont, contSize, loopStart);
             interWhile(br, brSize, falseBranch);
         }
+        else if (ctx.WRITE() != null) {
+            int expId = interExp(ctx.exp(),false);
+            genId(new WriteTAC(TAC.tacVector.size(), expId));
+        }
         // 未知节点
-        //有问题，忽略了WRITE LP Exp RP SEMI,按下不表
         else {
             throw new IllegalArgumentException("Unhandled statement type.");
         }
+
+
     }
 
     /**
@@ -354,15 +354,17 @@ public class CreateTAC extends splBaseVisitor<Void> {
      */
     private int interExp(splParser.ExpContext ctx, boolean single) {
         // READ LP RP
-        if (ctx == null) {
-            return 0;
-        }
+
         if (ctx.ID() != null && "READ".equals(ctx.ID().getText()) && ctx.LP() != null && ctx.RP() != null) {
             // 生成 READ TAC
             ReadTAC tac = new ReadTAC(TAC.tacVector.size());
             int id = genId(tac);
             return id;
         }
+
+
+
+
 
         // INT | FLOAT | CHAR
         if (ctx.INT() != null) {
@@ -522,74 +524,68 @@ public class CreateTAC extends splBaseVisitor<Void> {
         //这里不知道为什么有问题genlist
         if (ctx.LT() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LT_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
-            //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LT_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+2));
+
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+2));
+
             return ifid;
         }
         if (ctx.LE() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LE_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
-            //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.LE_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+2));
+
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+2));
+
             return ifid;
         }
         if (ctx.GT() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GT_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
-            //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GT_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+2));
+
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+2));
+
             return ifid;
         }
         if (ctx.GE() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GE_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
-            //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.GE_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+2));
+
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+2));
+
             return ifid;
         }
         if (ctx.NE() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.NE_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
-            //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.NE_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+2));
+
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+2));
+
             return ifid;
         }
         if (ctx.EQ() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             //genlist改0
-            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.EQ_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
-            //genlist改0
-            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+1));
-            genId(new LabelTAC(TAC.tacVector.size()));
+            int ifid = genId(new IFTAC(TAC.tacVector.size(), Operator.EQ_OPERATOR, lexpid, rexpid, TAC.tacVector.size()+2));
+
+            genId(new GOTOTAC(TAC.tacVector.size(), TAC.tacVector.size()+2));
+
             return ifid;
         }
 
         // Exp ASSIGN Exp
         if (ctx.ASSIGN() != null) {
-            int rightId = interExp(ctx.exp(2), false);
+            int rightId = interExp(ctx.exp(1), false);
             int leftId = interExp(ctx.exp(0), true);
 
             if (TAC.tacVector.get(leftId) instanceof AssignTAC) {
@@ -604,28 +600,28 @@ public class CreateTAC extends splBaseVisitor<Void> {
         // Exp [{PLUS}|{MINUS}|{MUL}|{DIV}] Exp
         if (ctx.PLUS() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             ArithmeticTAC tac = new ArithmeticTAC(TAC.tacVector.size(), Operator.PLUS_OPERATOR, lexpid, rexpid);
             int id = genId(tac);
             return id;
         }
         if (ctx.MINUS() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             ArithmeticTAC tac = new ArithmeticTAC(TAC.tacVector.size(), Operator.MINUS_OPERATOR, lexpid, rexpid);
             int id = genId(tac);
             return id;
         }
         if (ctx.MUL() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             ArithmeticTAC tac = new ArithmeticTAC(TAC.tacVector.size(), Operator.MUL_OPERATOR, lexpid, rexpid);
             int id = genId(tac);
             return id;
         }
         if (ctx.DIV() != null) {
             int lexpid = interExp(ctx.exp(0), false);
-            int rexpid = interExp(ctx.exp(2), false);
+            int rexpid = interExp(ctx.exp(1), false);
             ArithmeticTAC tac = new ArithmeticTAC(TAC.tacVector.size(), Operator.DIV_OPERATOR, lexpid, rexpid);
             int id = genId(tac);
             return id;
@@ -1039,7 +1035,8 @@ public class CreateTAC extends splBaseVisitor<Void> {
      * @return 符号对应的 TAC ID，如果不存在则返回 0
      */
     private int getIR(String name) {
-        return TAC.table.getOrDefault(name, 0);
+        Integer value = symbolTable.get(name);
+        return value != null ? value : 0;
     }
 
 

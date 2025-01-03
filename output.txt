@@ -1,34 +1,28 @@
-FUNCTION mod :
+
+FUNCTION hanoi :
 PARAM t2
 PARAM t3
-t4 := #0
-t5 := t4 - #0
-FUNCTION isPalindrome :
-PARAM t7
-t8 := #0
-t9 := t8
-t10 := #0
-t11 := t10
-t12 := #0
-t13 := t12
-t14 := #0
-IF t14 != t0 GOTO label16
-LABEL label16 :
-GOTO label18
-LABEL label18 :
-t19 := #0
-IF t19 == t0 GOTO label21
-LABEL label21 :
-GOTO label23
-LABEL label23 :
+PARAM t4
+PARAM t5
+t6 := #0
+IF t6 == t0 GOTO label8
+LABEL label8 :
+GOTO label10
+LABEL label10 :
+t11 := #0
 FUNCTION main :
-t25 := #0
-t26 := #0
+t13 := #3
+t14 := t13
+t15 := #0
+t16 := #1
+t17 := &t16
+t18 := #2
+t19 := &t18
+t20 := #3
+t21 := &t20
+ARG t15
+ARG t16
+ARG t18
+ARG t20
+t26 := CALL hanoi
 t27 := #0
-ARG t27
-t29 := CALL isPalindrome
-IF t29 == t0 GOTO label31
-LABEL label31 :
-GOTO label33
-LABEL label33 :
-t34 := #0

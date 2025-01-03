@@ -95,6 +95,7 @@ stmt        : exp SEMI
             | IF LP exp RP stmt
             | ELSE stmt {System.err.println("Error type B at Line " + $ELSE.getLine() + ": no 'if' before 'else'");}
             | WHILE LP exp RP stmt
+            |  WRITE LP exp RP SEMI // 添加WRITE语法
             | exp {
                 System.err.println("Error type B at Line " + $exp.start.getLine() + ": Missing semicolon \';\'");
             }
@@ -249,7 +250,7 @@ INT: '0x' [1-9a-fA-F] [0-9a-fA-F]*  // 0x 后面必须有非零数字或字母
     | '0x' '0'  // 处理 0x 后接 0 的无效情况
     | [1-9][0-9]*  // 非十六进制整数
     | [0-9]; // 单独的零数字;
-
+WRITE: 'write';
 /// 标识符和数值
 ID: [a-zA-Z_][a-zA-Z_0-9]*;
 
@@ -264,6 +265,9 @@ CHATTOKEN: [0-9a-fA-F];
 INVALID_CHAR: '\'' .*? '\'' {
 System.err.println("Error type A at Line " + getLine() + ": wrong lexeme " + getText());
 };
+// 添加WRITE关键字
+
+
 
 // ILLEGAL_TOKEN: ~[\t\n\r \u0020-\u007E];
 
